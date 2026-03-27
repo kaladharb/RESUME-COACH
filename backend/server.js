@@ -11,7 +11,7 @@ const app = express();
 
 // Middleware
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5173";
-app.use(cors({ origin: FRONTEND_ORIGIN })); // Allow requests from Vite frontend
+app.use(cors({ origin: "*" }));
 app.use(express.json()); // Parses JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parses URL-encoded arrays/objects
 
