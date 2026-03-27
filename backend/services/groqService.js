@@ -1,4 +1,4 @@
-const axios = require('axios');
+const axios = require("axios");
 
 /**
  * Utility function to clean and parse JSON securely.
@@ -7,14 +7,17 @@ const axios = require('axios');
 const safeParseJSON = (str) => {
   try {
     // 1. Remove markdown code blocks if any (e.g., ```json ... ```)
-    let cleaned = str.replace(/```json/gi, '').replace(/```/g, '').trim();
+    let cleaned = str
+      .replace(/```json/gi, "")
+      .replace(/```/g, "")
+      .trim();
     // 2. Try parsing
     return JSON.parse(cleaned);
   } catch (err) {
     console.error("JSON parsing error:", err.message);
     return {
       error: "Failed to parse AI response as valid JSON.",
-      rawText: str
+      rawText: str,
     };
   }
 };
@@ -26,8 +29,16 @@ const safeParseJSON = (str) => {
  */
 const analyzeResumeWithGroq = async (resumeText) => {
   const apiKey = process.env.GROQ_API_KEY;
-  const apiUrl = process.env.GROQ_API_URL;
-  const model = process.env.GROQ_MODEL;
+  const apiUrl =
+    process.env.GROQ_API_URL ||
+    "https://api.groq.com/openai/v1/chat/completions";
+  const model = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+
+  if (!apiKey) {
+    throw new Error(
+      "GROQ_API_KEY is required for Groq API calls. Set it as an environment variable.",
+    );
+  }
 
   const systemPrompt = `You are an expert AI Resume and Career Coach. You analyze resumes and provide structured career guidance. Always respond with valid JSON only. No markdown. No text outside the JSON object.`;
 
@@ -54,18 +65,18 @@ Resume text: ${resumeText}`;
       {
         model: model,
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
         ],
         temperature: 0.3,
-        max_tokens: 4000
+        max_tokens: 4000,
       },
       {
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        }
-      }
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+      },
     );
 
     const aiText = response.data.choices[0].message.content;
@@ -76,13 +87,12 @@ Resume text: ${resumeText}`;
     }
 
     return parsedData;
-
   } catch (error) {
-    console.error('Groq API Error:', error.response?.data || error.message);
+    console.error("Groq API Error:", error.response?.data || error.message);
     throw new Error(JSON.stringify(error.response?.data || error.message));
   }
 };
 
 module.exports = {
-  analyzeResumeWithGroq
+  analyzeResumeWithGroq,
 };
